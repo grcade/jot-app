@@ -17,3 +17,39 @@ export const createUser = (data) => {
         data,
     });
 };
+
+
+export const addRefreshToken = (id, refreshToken) => {
+    return prisma.refreshToken.create({
+        data: { token: refreshToken, userId: id },
+    });
+}
+
+export const updateRefreshToken = (id, refreshToken) => {
+    return prisma.refreshToken.update({
+        where: { userId: id },
+        data: { token: refreshToken },
+    });
+}
+
+
+
+
+export const findUserByRefreshToken = (refreshToken) => {
+    return prisma.refreshToken.findUnique({
+        where: { token: refreshToken },
+    });
+}
+
+export const clearRefreshToken = (id) => {
+    return prisma.refreshToken.delete({
+        where: { userId: id },
+    });
+}
+
+export const invalidrefreshToken = async (refreshToken) => {
+    return prisma.refreshToken.update({
+        where: { token: refreshToken },
+        data: { valid: false },
+    });
+}

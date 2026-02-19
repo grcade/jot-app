@@ -12,10 +12,21 @@ export const comparePassword = (password, hashedPassword) => {
 
 export const generateToken = (payload) => {
     return jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: 48 * 60 * 60,
+        expiresIn: 24 * 60 * 60,
     });
 };
 
-export const verifyToken = (token) => {
+export const generateRefreshToken = (payload) => {
+    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+        expiresIn: 7 * 24 * 60 * 60,
+    });
+}
+
+
+export const verifyAccessToken = (token) => {
     return jwt.verify(token, process.env.JWT_SECRET);
+};
+
+export const verifyRefreshToken = (token) => {
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 };

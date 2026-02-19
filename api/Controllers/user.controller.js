@@ -1,5 +1,5 @@
 
-import { registerUserService, loginUserService, getUserProfileService } from '../Services/auth.service.js';
+import { registerUserService, loginUserService, getUserProfileService, logoutUserService, refreshTokenService } from '../Services/auth.service.js';
 
 
 
@@ -48,17 +48,19 @@ const loginUser = async (req, res) => {
     }
 
     try {
-        const token = await loginUserService(email, password)
+        const { accessToken, refreshToken } = await loginUserService(email, password)
 
 
-        res.cookie('token', token, {
+        res.cookie('token', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 48 * 60 * 60 * 1000
-        })
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
-        return res.status(200).json({ message: "Login successful", success: true })
+
+
+        return res.status(200).json({ message: "Login successful", accessToken: accessToken, success: true })
 
 
     } catch (error) {
@@ -90,6 +92,8 @@ const logoutUser = async (req, res) => {
             });
         }
         if (req.cookies.token) {
+            const refreshToken = req.cookies.token;
+            await logoutUserService(refreshToken);
             res.clearCookie("token")
             return res.status(200).json({
                 message: "User logged out successfully",
@@ -115,22 +119,21 @@ const logoutUser = async (req, res) => {
 const getUserProfile = async (req, res) => {
 
     try {
-        if (req.cookie.token) {
-            const token = req.cookie.token
-            const { email } = await getUserProfileService(token)
+        const { id } = req.user;
+        const { email } = await getUserProfileService(id)
 
 
-            return res.status(200).json({
-                message: "User profile fetched successfully",
-                success: true,
-                data: {
-                    email
-                }
-            })
+        return res.status(200).json({
+            message: "User profile fetched successfully",
+            success: true,
+            data: {
+                email
+            }
+        })
 
-        }
+    }
 
-    } catch (error) {
+    catch (error) {
         console.error("Get User Profile ERROR:", error);
         return res.status(500).json({
             message: "Failed to get user profile",
@@ -141,4 +144,52 @@ const getUserProfile = async (req, res) => {
 
 
 
-export { registerUser, loginUser, logoutUser, getUserProfile }
+const refreshToken = async (req, res) => {
+    try {
+        console.log("Received request to refresh token. Cookies:", req.cookies);
+        if (!req.cookies.token) {
+            return res.status(400).json({
+                message: "No refresh token provided",
+                success: false
+            })
+        }
+        console.log("Refresh token found in cookies:", req.cookies.token);
+        const { newAccessToken, newRefreshToken } = await refreshTokenService(req.cookies.token)
+        console.log("Generated new access token and refresh token:", { newAccessToken, newRefreshToken });
+
+        res.cookie('token', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
+        return res.status(200).json({
+            message: "Token refreshed successfully",
+            success: true,
+            accessToken: newAccessToken
+        })
+
+    } catch (error) {
+        console.error("Refresh Token ERROR:", error);
+        if (error.name === "Invalid Refresh Token") {
+            return res.status(403).json({
+                message: "Invalid refresh token",
+                success: false
+            })
+        }
+        if (error.name === 'TokenExpiredError') {
+            console.log("Expired token", error.message);
+            return res.status(401).json({ message: "Token expired", success: false });
+        }
+        return res.status(401).json({
+            message: "Failed to refresh token",
+            success: false
+        })
+
+    }
+}
+
+
+
+export { registerUser, loginUser, logoutUser, getUserProfile, refreshToken }

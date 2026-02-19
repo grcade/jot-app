@@ -19,7 +19,17 @@ model User {
     password  String
     createdAt DateTime @default(now())
 
-    notes Note[]
+    notes        Note[]
+    refreshToken RefreshToken?
+}
+
+model RefreshToken {
+    token     String   @unique
+    createdAt DateTime @default(now())
+    valid     Boolean  @default(true)
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Note {
