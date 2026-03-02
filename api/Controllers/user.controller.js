@@ -146,16 +146,16 @@ const getUserProfile = async (req, res) => {
 
 const refreshToken = async (req, res) => {
     try {
-        console.log("Received request to refresh token. Cookies:", req.cookies);
+
         if (!req.cookies.token) {
             return res.status(400).json({
                 message: "No refresh token provided",
                 success: false
             })
         }
-        console.log("Refresh token found in cookies:", req.cookies.token);
+
         const { newAccessToken, newRefreshToken } = await refreshTokenService(req.cookies.token)
-        console.log("Generated new access token and refresh token:", { newAccessToken, newRefreshToken });
+
 
         res.cookie('token', newRefreshToken, {
             httpOnly: true,

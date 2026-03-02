@@ -20,7 +20,7 @@ const getNoteByIdService = (userId, id) => {
     return getNoteById(userId, id);
 }
 
-const updateNoteService =  async (userId, id, title, description, bg) => {
+const updateNoteService = async (userId, id, title, description, bg) => {
     return await updateNote(userId, id, { title, desc: description, bg });
 }
 

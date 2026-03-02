@@ -5,7 +5,8 @@ import {
     createUser,
     clearRefreshToken,
     findUserByRefreshToken,
-    addRefreshToken
+    addRefreshToken,
+
 } from "../repository/user.repository.js";
 import {
     hashPassword,
@@ -14,7 +15,7 @@ import {
     verifyRefreshToken,
     generateRefreshToken
 } from "../utils/auth.utils.js";
-import { console } from "inspector";
+
 
 export const registerUserService = async (email, password) => {
     const existingUser = await findUserByEmail(email);
@@ -75,34 +76,45 @@ export const logoutUserService = async (refreshToken) => {
 
 
 export const refreshTokenService = async (refreshToken) => {
-    console.log("Received refresh token:", refreshToken);
-    console.log("Verifying refresh token with secret:", process.env.JWT_REFRESH_SECRET);
+
+
     try {
-        verifyRefreshToken(refreshToken);
+
+
+        const decoded = verifyRefreshToken(refreshToken);
+
+        if (decoded.expiresIn < Date.now()) {
+            clearRefreshToken(decoded.userId);
+            throw new Error("Refresh token expired");
+        }
+
+
+        const tokenRecord = await findUserByRefreshToken(refreshToken);
+
+
+        if (!tokenRecord) {
+            throw new Error("Invalid Refresh Token")
+        }
+
+        const user = await findUserById(tokenRecord.userId);
+
+        if (!user) {
+            throw new Error("USER_NOT_FOUND");
+        }
+        const newAccessToken = generateToken({ id: user.id });
+        const newRefreshToken = generateRefreshToken({ id: user.id });
+
+        await clearRefreshToken(user.id);
+        await addRefreshToken(user.id, newRefreshToken);
+
+        return { newAccessToken, newRefreshToken };
+
     } catch (err) {
-        console.log("Verification failed inside service:", err);
+
+        console.log("Verification failed inside refresg token service:", err);
         throw err;
     }
 
-    console.log("Refresh token is valid. Finding user by refresh token...");
-    const tokenRecord = await findUserByRefreshToken(refreshToken);
-    console.log("Token record found for refresh token:", tokenRecord);
 
-    if (!tokenRecord) {
-        throw new Error("Invalid Refresh Token")
-    }
 
-    const user = await findUserById(tokenRecord.userId);
-
-    if (!user) {
-        throw new Error("USER_NOT_FOUND");
-    }
-
-    const newAccessToken = generateToken({ id: user.id });
-    const newRefreshToken = generateRefreshToken({ id: user.id });
-
-    await clearRefreshToken(user.id);
-    await addRefreshToken(user.id, newRefreshToken);
-
-    return { newAccessToken, newRefreshToken };
 }

@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma.js";
 
+
 export const findUserByEmail = (email) => {
     return prisma.user.findUnique({
         where: { email },
@@ -20,8 +21,13 @@ export const createUser = (data) => {
 
 
 export const addRefreshToken = (id, refreshToken) => {
-    return prisma.refreshToken.create({
-        data: { token: refreshToken, userId: id },
+
+
+
+    return prisma.refreshToken.upsert({
+        where: { userId: id },
+        update: { token: refreshToken, userId: id, createdAt: new Date(), valid: true },
+        create: { token: refreshToken, userId: id },
     });
 }
 
