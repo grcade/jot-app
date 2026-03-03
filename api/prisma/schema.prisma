@@ -45,37 +45,36 @@ model Note {
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     tasks Task[]
+    tags  NoteTag[]
 }
 
 model Task {
-    id        String   @id @default(uuid())
+    id        String    @id @default(uuid())
     taskDesc  String
-    priority  String
-    deadline  DateTime
+    priority  String?
+    deadline  DateTime?
     status    String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
 
     noteId String
     note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
-
-    tags TaskTag[]
 }
 
 model Tag {
     id   String @id @default(uuid())
     name String @unique
 
-    tasks TaskTag[]
+    tasks NoteTag[]
 }
 
-model TaskTag {
-    taskId String
+model NoteTag {
+    noteId String
     tagId  String
 
-    task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+    note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
     tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-    @@id([taskId, tagId])
+    @@id([noteId, tagId])
 }
