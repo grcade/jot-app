@@ -21,6 +21,7 @@ model User {
 
     notes        Note[]
     refreshToken RefreshToken?
+    tags         Tag[]
 }
 
 model RefreshToken {
@@ -63,9 +64,13 @@ model Task {
 
 model Tag {
     id   String @id @default(uuid())
-    name String @unique
+    name String
 
-    tasks NoteTag[]
+    notes  NoteTag[]
+    userId String
+    user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([name, userId])
 }
 
 model NoteTag {

@@ -26,7 +26,7 @@ const createTask = async (req, res) => {
             noteId,
             taskDesc,
             priority: priority || null,
-            deadline: new Date(deadline) || null,
+            deadline: deadline ? new Date(deadline) : null,
             status: status || "pending"
         }
         const task = await createTaskService(taskData)
@@ -54,7 +54,7 @@ const getAllTasks = async (req, res) => {
     }
     try {
         const tasks = await getAllTasksService(noteId, userId)
-        console.log("Tasks retrieved for noteId", noteId, "and userId", userId, ":", tasks);
+
         return res.status(200).json({ message: "All tasks retrieved successfully", tasks })
     } catch (error) {
         console.error("Error retrieving all tasks:", error);
