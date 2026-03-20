@@ -5,6 +5,8 @@ import cors from 'cors';
 dotenv.config();
 import { userRoutes, tasksRoutes, notesRoutes } from './Routes/index.js';
 import { prisma } from './utils/prisma.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './docs/swagger.js';
 
 
 
@@ -15,12 +17,14 @@ const PORT = process.env.PORT
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 
 
 app.use(cors({
     origin: "http://127.0.0.1:3000",
-    methods: ["POST", "GET"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }))
