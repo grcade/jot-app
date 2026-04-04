@@ -8,13 +8,28 @@ export const createNoteRepository = (data) => {
 
 export const getAllNotesRepository = (userId) => {
     return prisma.note.findMany({
-        where: { userId }
+        where: { userId },
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        }
     })
 }
 
 export const getNoteByIdRepository = (userId, id) => {
     return prisma.note.findUnique({
-        where: { id, userId }
+        where: { id, userId },
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            },
+            tasks: true
+        }
     })
 }
 

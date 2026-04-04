@@ -1,11 +1,11 @@
 import { createNoteRepository, getAllNotesRepository, getNoteByIdRepository, updateNoteRepository, deleteNoteRepository, getAllTagsRepository, getNoteTagsRepository, getNotesByTagRepository, removeTagFromNoteRepository, addTagToNoteRepository } from '../repository/notes.repository.js';
 
-const createNoteService = async (userId, title, description, color) => {
+const createNoteService = async (userId, title, description, bg) => {
     const noteData = {
         userId,
         title,
         desc: description,
-        color
+        bg
     };
     return await createNoteRepository(noteData);
 }

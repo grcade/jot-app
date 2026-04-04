@@ -23,7 +23,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 app.use(cors({
-    origin: "http://127.0.0.1:3000",
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
     methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]

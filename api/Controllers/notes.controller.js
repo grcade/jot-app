@@ -12,14 +12,14 @@ const createNote = async (req, res) => {
     }
 
 
-    const { title, description, color } = req.body
+    const { title, description, bg } = req.body
 
     if (!title) {
         return res.status(400).json({ message: "Title is required" })
     }
 
     try {
-        const note = await createNoteService(userId, title, description, color)
+        const note = await createNoteService(userId, title, description, bg)
         return res.status(201).json({ message: "Note created successfully", success: true, note })
     } catch (error) {
         console.error("Error creating note:", error);
