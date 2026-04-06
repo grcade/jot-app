@@ -14,6 +14,13 @@ const QuickNote = () => {
   const [addTagToNote] = useAddTagToNoteMutation();
   const containerRef = useRef(null);
 
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setBg('#1a1a1a');
+    setTags([]);
+    setTagName('');
+  };
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -27,13 +34,6 @@ const QuickNote = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [title, description, tags]);
 
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setBg('#1a1a1a');
-    setTags([]);
-    setTagName('');
-  };
 
   const handleSave = async () => {
     if (!title.trim() && !description.trim()) {
@@ -43,7 +43,7 @@ const QuickNote = () => {
     }
 
     try {
-    
+
       const result = await addNote({ title, description, bg }).unwrap();
 
       // Add tags if any using the new note's ID

@@ -47,6 +47,8 @@ model Note {
 
     tasks Task[]
     tags  NoteTag[]
+
+    @@unique( [id, createdAt])
 }
 
 model Task {

@@ -6,17 +6,34 @@ export const createNoteRepository = (data) => {
     });
 }
 
-export const getAllNotesRepository = (userId) => {
-    return prisma.note.findMany({
-        where: { userId },
-        include: {
-            tags: {
-                include: {
-                    tag: true
+export const getAllNotesRepository = async (userId, lastSeenId , limit) => {
+    console.log("Cursor received:", lastSeenId);
+    // We use a transaction to get both the paginated data and the total count
+    const [notes, totalNotesCount] = await prisma.$transaction([
+
+        prisma.note.findMany({
+            where: {
+                userId,
+            },
+            orderBy: { id: 'desc' },
+            cursor: lastSeenId ? { id: lastSeenId } : undefined,
+            skip: lastSeenId ? 1 : 0,
+            take: limit || 10,
+            include: {
+                tags: {
+                    include: {
+                        tag: true
+                    }
                 }
             }
-        }
-    })
+        }),
+
+        prisma.note.count({
+            where: { userId }
+        })
+    ]);
+
+    return { notes, totalNotesCount };
 }
 
 export const getNoteByIdRepository = (userId, id) => {

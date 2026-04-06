@@ -10,9 +10,9 @@ const createNoteService = async (userId, title, description, bg) => {
     return await createNoteRepository(noteData);
 }
 
-const getAllNotesService = (userId) => {
+const getAllNotesService = (userId, lastSeenId, limit) => {
 
-    return getAllNotesRepository(userId);
+    return getAllNotesRepository(userId, lastSeenId, limit);
 }
 
 

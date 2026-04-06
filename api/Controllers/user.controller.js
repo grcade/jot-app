@@ -1,4 +1,5 @@
 
+import process from 'node:process';
 import { registerUserService, loginUserService, getUserProfileService, logoutUserService, refreshTokenService } from '../Services/auth.service.js';
 
 
@@ -28,9 +29,9 @@ const registerUser = async (req, res) => {
         if (error.message === "USER_ALREADY_EXISTS") {
             return res.status(400).json({ message: "User already exists" })
         }
+        console.error("Error registering user:", error);
+        return res.status(500).json({ message: "Internal Server Error" })
     }
-    console.error("Error registering user:", error);
-    return res.status(500).json({ message: "Internal Server Error" })
 }
 
 

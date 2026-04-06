@@ -11,6 +11,8 @@ const baseQuery = fetchBaseQuery({
         }
         return headers;
     },
+    credentials: 'include',
+
 });
 
 const baseQueryWithReauth = async (args, api, extraOptions) => {
@@ -42,5 +44,5 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const apiSlice = createApi({
     baseQuery: baseQueryWithReauth,
     tagTypes: ['Note', 'Task', 'User'],
-    endpoints: (builder) => ({}),
+    endpoints: () => ({}),
 });

@@ -107,7 +107,7 @@ const updateTask = async (req, res) => {
 
 
     try {
-        const updatedTask = await updateTaskService(userId, id, { taskDesc, priority, deadline: new Date(deadline) || null })
+        const updatedTask = await updateTaskService(userId, id, { taskDesc, priority, deadline: new Date(deadline)  })
         if (!updatedTask) {
             return res.status(404).json({ message: "Task not found or unauthorized access" })
         }

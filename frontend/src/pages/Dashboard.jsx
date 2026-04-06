@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useGetNotesQuery } from '../features/notes/notesApiSlice';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
@@ -6,43 +6,97 @@ import QuickNote from '../components/QuickNote';
 import NoteCard from '../components/NoteCard';
 import { Loader2, Search } from 'lucide-react';
 
-const Dashboard = () => {
-  const { data: notes = [], isLoading, isError } = useGetNotesQuery();
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const filteredNotes = notes.filter(note => {
-    const matchesSearch = 
-      note.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      note.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      note.desc?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+const Dashboard = () => {
+
+
+
+
+    const [cursor, setCursor] = useState(null);
+    // const [hasMore, setHasMore] = useState(true);
+
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeFilter, setActiveFilter] = useState('all');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [allNotes, setAllNotes] = useState([]);
+
+    const { data, isLoading, isError } = useGetNotesQuery(cursor);
+
+
+    const notes = data?.notes || [];
+    const totalNotesCount = data?.totalNotesCount || 0;
+
+
+    useEffect(() => {
+  if (!data?.notes) return;
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+   setAllNotes(prev => {
+    const existingIds = new Set(prev.map(n => n.id));
+    const newNotes = data.notes.filter(n => !existingIds.has(n.id));
+
+    if (newNotes.length === 0) return prev;
+
+    return [...prev, ...newNotes];
+  });
+}, [data?.notes]);
+
+
+
+    const filteredNotes = useMemo(() => {
+        return allNotes.filter(note => {
+            const matchesSearch =
+                note.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                note.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    note.desc?.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (!matchesSearch) return false;
 
     if (activeFilter === 'all') return true;
     if (activeFilter.startsWith('tag:')) {
-      const tagId = activeFilter.split(':')[1];
-      // Note: Backend returns tags as an array of NoteTag objects with an included tag
-      return note.tags?.some(tagWrapper => (tagWrapper.tag?.id || tagWrapper.tagId) === tagId);
+        const tagId = activeFilter.split(':')[1];
+        // Note: Backend returns tags as an array of NoteTag objects with an included tag
+        return note.tags?.some(tagWrapper => (tagWrapper.tag?.id || tagWrapper.tagId) === tagId);
     }
     return true;
-  });
+}) }, [allNotes, searchTerm, activeFilter]);
 
+const hasMore = useMemo(() => {
+  if (allNotes.length === 0) return false;
+
+  if (filteredNotes.length === 0) return false;
+
+  if (totalNotesCount === allNotes.length) return false;
+
+  return true;
+}, [allNotes.length, filteredNotes.length, totalNotesCount]);
+
+
+
+
+  const handleLoadMore = () => {
+      if (hasMore && !isLoading && notes.length > 0) {
+            const enCursor = btoa(allNotes.at(-1)?.id);
+
+          setCursor(enCursor);
+        }
+
+
+  }
   return (
     <div className="flex flex-col h-screen bg-bg-main overflow-hidden text-text-primary">
-      <TopBar 
-        searchTerm={searchTerm} 
-        setSearchTerm={setSearchTerm} 
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+      <TopBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
-      
+
       <div className="flex flex-1 overflow-hidden">
         {isSidebarOpen && (
           <Sidebar activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
         )}
-        
+
         <main className="flex-1 overflow-y-auto bg-bg-main px-8 pb-24 scrollbar-hide">
           <div className="max-w-[1400px] mx-auto pt-10">
             <QuickNote />
@@ -72,6 +126,14 @@ const Dashboard = () => {
                       {filteredNotes.map(note => (
                         <NoteCard key={note.id} note={note} />
                       ))}
+
+                    {hasMore && (
+                        <div className="col-span-full flex justify-center">
+                      <button onClick={handleLoadMore} className=' text-center hover:text-amber-50 hover:cursor-pointer py-2 text-sm text-text-secondary'>
+                        load more...
+                      </button>
+                      </div>
+                    )}
                     </div>
                   )}
                 </section>

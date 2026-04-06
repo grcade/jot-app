@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import process from 'node:process';
 
 
 export const hashPassword = async (password) => {

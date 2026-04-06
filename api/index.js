@@ -7,6 +7,8 @@ import { userRoutes, tasksRoutes, notesRoutes } from './Routes/index.js';
 import { prisma } from './utils/prisma.js';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger.js';
+import process from 'node:process';
+
 
 
 
@@ -53,17 +55,18 @@ app.use('/api/v1/notes', notesRoutes)
 app.use('/api/v1/tasks', tasksRoutes)
 
 
-app.listen(PORT, (req, res) => {
+
+app.listen(PORT, () => {
     console.log(`Server listening on PORT ${PORT}`)
 
     // Ping the DB every 4 minutes to prevent Neon from suspending
     // (Neon suspends after 5 min of inactivity)
     setInterval(async () => {
-        try {
-            await prisma.$queryRaw`SELECT 1`;
-            console.log("Pinged DB to keep connection alive");
-        } catch (e) {
-            // silently ignore, will reconnect on next real query
-        }
+        // try {
+        //     await prisma.$queryRaw`SELECT 1`;
+        //     console.log("Pinged DB to keep connection alive");
+        // } catch (e) {
+        //     // silently ignore, will reconnect on next real query
+        //
     }, 4 * 60 * 1000);
 })

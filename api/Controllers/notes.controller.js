@@ -1,5 +1,4 @@
-import { createNoteService, updateNoteService, getAllNotesService, getNoteByIdService, deleteNoteService, addTagToNoteService, getAllTagsService, getNoteTagsService, getNotesByTagService } from "../Services/notes.service.js";
-
+import { createNoteService, updateNoteService, getAllNotesService, getNoteByIdService, deleteNoteService, addTagToNoteService, getAllTagsService, getNoteTagsService, getNotesByTagService, removeTagFromNoteService } from "../Services/notes.service.js";
 
 const createNote = async (req, res) => {
     if (!req.user) {
@@ -35,16 +34,24 @@ const getAllNotes = async (req, res) => {
     }
 
     try {
+        let { cursor, limit } = req.query;
+
+        const lastSeenId = cursor ? atob(cursor) : undefined;
+
+        if (limit) limit = parseInt(limit);
+        else limit = 10;
+
         const { id: userId } = req.user
         if (!userId) {
             return res.status(400).json({ message: "User ID is missing", success: false })
         }
 
-        const notes = await getAllNotesService(userId)
+        const { notes, totalNotesCount } = await getAllNotesService(userId, lastSeenId, limit)
         if (!notes) {
             return res.status(404).json({ message: "Notes not found", success: false });
         }
-        return res.status(200).json({ message: "Reterived all notes successfully", success: true, notes })
+        // console.log("Fetched notes:", notes, "Total count:", totalNotesCount);
+        return res.status(200).json({ message: "Reterived all notes successfully", success: true, notes, totalNotesCount })
 
 
 
